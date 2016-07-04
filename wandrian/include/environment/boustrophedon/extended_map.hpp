@@ -27,10 +27,13 @@ public:
   ExtendedMap(std::string);
   ~ExtendedMap();
   void build();
+  std::list<PolygonPtr> get_extended_obstacles();
+  int number_space_need_visit;
 
 private:
+  std::list<PolygonPtr> extended_obstacles;
   int static comma_position(std::string);
-  PointPtr create_point_to_string(std::string);
+  PointPtr create_point_from_string(std::string);
 
 };
 

@@ -11,6 +11,7 @@
 #include <list>
 #include <ros/ros.h>
 #include "../../common/vector.hpp"
+#include "../../common/segment.hpp"
 #include "../../common/rectangle.hpp"
 #include "../../environment/cell.hpp"
 #include "../../environment/boustrophedon/extended_map.hpp"
@@ -33,16 +34,17 @@ public:
   ~Boustrophedon();
   void initialize(PointPtr, double, std::string);
   void cover();
-  void dfs(SpacePtr);
+  void dfs(SpacePtr, double);
   ExtendedMapPtr get_map();
   std::list<SpacePtr> create_list_space(RectanglePtr, std::list<VerticesPtr>);
   std::list<VerticesPtr> create_list_vertices(RectanglePtr,
-      std::list<RectanglePtr>);
+      std::list<PolygonPtr>);
 
   void set_behavior_see_obstacle(boost::function<bool(VectorPtr, double)>);
 protected:
   bool go_to(PointPtr, bool = STRICTLY);
-  bool go_into(SpacePtr);
+  bool go_into(SpacePtr, double);
+  bool go_with(PointPtr, bool);
 
 private:
   CellPtr starting_cell;
@@ -50,7 +52,6 @@ private:
   ExtendedMapPtr map;
   std::set<CellPtr, CellComp> old_cells;
 
-  bool go_with(VectorPtr, double);
   void boustrophedon_cd();
   bool check(CellPtr);
 };

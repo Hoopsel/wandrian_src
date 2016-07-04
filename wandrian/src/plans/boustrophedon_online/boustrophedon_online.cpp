@@ -12,8 +12,8 @@ namespace plans {
 namespace boustrophedon_online {
 
 BoustrophedonOnline::BoustrophedonOnline() :
-    tool_size(0), number_cell(0), number_neighbor_cell(
-        0), check_insert(0), start(vertex(0)), goal(vertex(0)) {
+    tool_size(0), number_cell(0), number_neighbor_cell(0), check_insert(0), start(
+        vertex(0)), goal(vertex(0)) {
 }
 
 BoustrophedonOnline::~BoustrophedonOnline() {
@@ -62,7 +62,7 @@ bool BoustrophedonOnline::see_obstacle(VectorPtr direction, double distance) {
 }
 
 bool BoustrophedonOnline::go_with(VectorPtr direction, double distance) {
-  PointPtr last_position = *(--path.end());
+  PointPtr last_position = path.back();
   PointPtr new_position = PointPtr(
       new Point(last_position + direction * distance));
   return go_to(new_position);
@@ -84,7 +84,6 @@ void BoustrophedonOnline::boustrophedon_move(CellPtr neighbor, CellPtr current,
   bplist.erase(neighbor);
   scan(neighbor);
 }
-
 
 void BoustrophedonOnline::bpmove(CellPtr current) {
   std::list<vertex>::iterator spi = backtrack_path.begin();
@@ -129,11 +128,10 @@ void BoustrophedonOnline::scan(CellPtr current) {
                   current->get_center()->y + tool_size)), tool_size));
   VectorPtr direction = VectorPtr(
       new Vector(
-          (neighbor_N->get_center() - current->get_center())
-              / tool_size));
+          (neighbor_N->get_center() - current->get_center()) / tool_size));
 
-  if (state_of(neighbor_N) != OLD){
-    if(see_obstacle(direction, tool_size / 2) == false) {
+  if (state_of(neighbor_N) != OLD) {
+    if (see_obstacle(direction, tool_size / 2) == false) {
       bplist.insert(neighbor_N);
     }
   }
@@ -143,7 +141,7 @@ void BoustrophedonOnline::scan(CellPtr current) {
               new Point(current->get_center()->x,
                   current->get_center()->y - tool_size)), tool_size));
   if (state_of(neighbor_S) != OLD) {
-    if(see_obstacle(+(+direction), tool_size / 2) == false) {
+    if (see_obstacle(+(+direction), tool_size / 2) == false) {
       bplist.insert(neighbor_S);
     }
   }
@@ -153,8 +151,8 @@ void BoustrophedonOnline::scan(CellPtr current) {
           PointPtr(
               new Point(current->get_center()->x + tool_size,
                   current->get_center()->y)), tool_size));
-  if (state_of(neighbor_E) != OLD){
-    if(see_obstacle(-direction, tool_size / 2) == false) {
+  if (state_of(neighbor_E) != OLD) {
+    if (see_obstacle(-direction, tool_size / 2) == false) {
       bplist.insert(neighbor_E);
     }
   }
@@ -164,12 +162,11 @@ void BoustrophedonOnline::scan(CellPtr current) {
           PointPtr(
               new Point(current->get_center()->x - tool_size,
                   current->get_center()->y)), tool_size));
-  if (state_of(neighbor_W) != OLD){
-    if(see_obstacle(+direction, tool_size / 2) == false) {
+  if (state_of(neighbor_W) != OLD) {
+    if (see_obstacle(+direction, tool_size / 2) == false) {
       bplist.insert(neighbor_W);
     }
   }
-
 
   // A* search
   CellPtr neighbor_EN = CellPtr(
@@ -192,7 +189,7 @@ void BoustrophedonOnline::scan(CellPtr current) {
           PointPtr(
               new Point(current->get_center()->x - tool_size,
                   current->get_center()->y - tool_size)), tool_size));
-  
+
   int vertex_current = check_vertex(current);
   if (vertex_current != -1) {
     if (check_insert == 0) {
@@ -211,30 +208,31 @@ void BoustrophedonOnline::scan(CellPtr current) {
   insert_cell_to_graph(current, neighbor_W, vertex_current, 10);
   insert_cell_to_graph(current, neighbor_E, vertex_current, 10);
   insert_cell_to_graph(current, neighbor_N, vertex_current, 10);
-  if (state_of(neighbor_E) == OLD && state_of(neighbor_N) == OLD){
+  if (state_of(neighbor_E) == OLD && state_of(neighbor_N) == OLD) {
     insert_cell_to_graph(current, neighbor_EN, vertex_current, 14);
   }
-  if (state_of(neighbor_W) == OLD && state_of(neighbor_N) == OLD){
+  if (state_of(neighbor_W) == OLD && state_of(neighbor_N) == OLD) {
     insert_cell_to_graph(current, neighbor_WN, vertex_current, 14);
   }
-  if (state_of(neighbor_E) == OLD && state_of(neighbor_S) == OLD){
+  if (state_of(neighbor_E) == OLD && state_of(neighbor_S) == OLD) {
     insert_cell_to_graph(current, neighbor_ES, vertex_current, 14);
   }
-  if (state_of(neighbor_W) == OLD && state_of(neighbor_S) == OLD){
+  if (state_of(neighbor_W) == OLD && state_of(neighbor_S) == OLD) {
     insert_cell_to_graph(current, neighbor_WS, vertex_current, 14);
   }
   // end A*
 
-  if (state_of(neighbor_N) != OLD && see_obstacle(direction, tool_size / 2) == false) {
+  if (state_of(neighbor_N) != OLD
+      && see_obstacle(direction, tool_size / 2) == false) {
     boustrophedon_move(neighbor_N, current, direction);
-  }
-  else if (state_of(neighbor_S) != OLD && see_obstacle(+(+direction), tool_size / 2) == false) {
+  } else if (state_of(neighbor_S) != OLD
+      && see_obstacle(+(+direction), tool_size / 2) == false) {
     boustrophedon_move(neighbor_S, current, +(+direction));
-  }
-  else if (state_of(neighbor_E) != OLD && see_obstacle(-direction, tool_size / 2) == false) {
+  } else if (state_of(neighbor_E) != OLD
+      && see_obstacle(-direction, tool_size / 2) == false) {
     boustrophedon_move(neighbor_E, current, -direction);
-  }
-  else if (state_of(neighbor_W) != OLD && see_obstacle(+direction, tool_size / 2) == false) {
+  } else if (state_of(neighbor_W) != OLD
+      && see_obstacle(+direction, tool_size / 2) == false) {
     boustrophedon_move(neighbor_W, current, +direction);
   }
 
@@ -244,13 +242,15 @@ void BoustrophedonOnline::scan(CellPtr current) {
   if (bplist.size()) {
     refine_bplist();
     std::cout << "Backtrack list: " << bplist.size() << "\n";
-    for (std::set<CellPtr>::iterator i = bplist.begin(); i != bplist.end(); i++) {
-    CellPtr tmp = CellPtr(*i);
-    std::cout << tmp->get_center()->x<<", " <<tmp->get_center()->y<<"\n";
-  }
+    for (std::set<CellPtr>::iterator i = bplist.begin(); i != bplist.end();
+        i++) {
+      CellPtr tmp = CellPtr(*i);
+      std::cout << tmp->get_center()->x << ", " << tmp->get_center()->y << "\n";
+    }
     find_bpcell(current);
     if (bplist.size()) {
-    bpmove(current);}
+      bpmove(current);
+    }
   }
 
 }
@@ -277,11 +277,11 @@ void BoustrophedonOnline::find_bpcell(CellPtr current) {
                 new Point(tmp->get_center()->x + tool_size,
                     tmp->get_center()->y)), tool_size));
     if (state_of(neighbor_E) == OLD) {
-      if(state_of(neighbor_W)==OLD){
-        if(check_distance(current, neighbor_E) < check_distance(current, neighbor_W))
+      if (state_of(neighbor_W) == OLD) {
+        if (check_distance(current, neighbor_E)
+            < check_distance(current, neighbor_W))
           goal = check_vertex(neighbor_E);
-      }
-      else{
+      } else {
         goal = check_vertex(neighbor_E);
       }
     }
@@ -296,13 +296,12 @@ void BoustrophedonOnline::find_bpcell(CellPtr current) {
           && check_distance(current, neighbor_N)
               < check_distance(current, neighbor_E)) {
         goal = check_vertex(neighbor_N);
-      }
-      else if (state_of(neighbor_W) == OLD
+      } else if (state_of(neighbor_W) == OLD
           && check_distance(current, neighbor_N)
               < check_distance(current, neighbor_W)) {
         goal = check_vertex(neighbor_N);
-      }
-      else goal = check_vertex(neighbor_N);
+      } else
+        goal = check_vertex(neighbor_N);
     }
 
     CellPtr neighbor_S = CellPtr(
@@ -426,14 +425,14 @@ void BoustrophedonOnline::insert_cell_to_graph(CellPtr current,
     if (vertex_current == -1) {
       if (vertex_neighbor == -1) {
         number_neighbor_cell = number_neighbor_cell + 1;
-        insert_edge(current, neighbor, 3,weightedge);
+        insert_edge(current, neighbor, 3, weightedge);
       } else if (vertex_neighbor != -1) {
         insert_edge(current, neighbor, 2, weightedge);
       }
     } else if (vertex_current != -1) {
       if (vertex_neighbor == -1) {
         number_neighbor_cell = number_neighbor_cell + 1;
-        insert_edge(current, neighbor, 1,weightedge);
+        insert_edge(current, neighbor, 1, weightedge);
       }
     }
   }

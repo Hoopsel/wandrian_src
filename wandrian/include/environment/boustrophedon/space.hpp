@@ -9,7 +9,7 @@
 #define WANDRIAN_INCLUDE_ENVIRONMENT_BOUSTROPHEDON_SPACE_HPP_
 
 #include "../../common/polygon.hpp"
-
+#include "vertices.hpp"
 using namespace wandrian::common;
 
 namespace wandrian {
@@ -17,29 +17,32 @@ namespace environment {
 namespace boustrophedon {
 
 class Space: public Polygon {
-
 public:
+  Space(std::list<PointPtr>, double);
   std::list<boost::shared_ptr<Space> > children;
   bool status_visited;
-  PointPtr point_backtrack;
+  double vary_upper, vary_below;
+  PointPtr backtrack_point;
+  PointPtr starting_point;
+  VerticesPtr get_vertices_upper();
+  VerticesPtr get_vertices_below();
+  SegmentPtr segment_below, segment_upper;
+  void set_stating_point(double, double);
+  void set_vertices_upper(VerticesPtr);
+  void set_vertices_below(VerticesPtr);
+  void set_parent(boost::shared_ptr<Space>);
+  void set_vary(double);
+  void set_point_backtrack(boost::shared_ptr<Space>,
+		  double robot_size, double enviroment);
 
-  Space(PointPtr, double, double);
+  static bool list_point_fit(std::list<PointPtr>);
   static bool compare_positions_x(boost::shared_ptr<Space>,
       boost::shared_ptr<Space>);
   static bool is_parent(boost::shared_ptr<Space>, boost::shared_ptr<Space>);
-
-  PointPtr get_center();
-  double get_size_x();
-  double get_size_y();
   boost::shared_ptr<Space> get_parent();
-  void set_parent(boost::shared_ptr<Space>);
-  void set_point_backtrack(boost::shared_ptr<Space>, boost::shared_ptr<Space>,
-		  double robot_size);
-
+  static void print_list_space(std::list<boost::shared_ptr<Space> >);
 private:
-  PointPtr center;
-  double size_x;
-  double size_y;
+  VerticesPtr vertices_below, vertices_upper;
   boost::shared_ptr<Space> parent;
 };
 
@@ -49,10 +52,10 @@ typedef boost::shared_ptr<Space> SpacePtr;
 inline bool operator<(const Space &c1, const Space &c2) {
   SpacePtr Space1 = SpacePtr(new Space(c1));
   SpacePtr Space2 = SpacePtr(new Space(c2));
-  return
-      std::abs(Space1->get_center()->x - Space2->get_center()->x) > EPSILON ?
-          (Space1->get_center()->x < Space2->get_center()->x) :
-          (Space1->get_center()->y < Space2->get_center()->y);
+  return true;
+//      std::abs(Space1->get_center()->x - Space2->get_center()->x) > EPSILON ?
+//          (Space1->get_center()->x < Space2->get_center()->x) :
+//          (Space1->get_center()->y < Space2->get_center()->y);
 }
 
 struct SpaceComp {
