@@ -19,7 +19,8 @@
 #include "common/point.hpp"
 #include "common/rectangle.hpp"
 #include "common/vector.hpp"
-#include "environment/mstc/communicator.hpp"
+#include "environment/mstc/base_communicator.hpp"
+#include "environment/mstc/mstc_communicator.hpp"
 
 #define NUM_SECONDS 5  // Loop after 5 seconds
 
@@ -45,6 +46,7 @@ public:
   double get_starting_point_x();
   double get_starting_point_y();
   std::string get_plan_name();
+  std::string get_ip_server();
   double get_linear_velocity();
   double get_positive_angular_velocity();
   double get_negative_angular_velocity();
@@ -58,7 +60,7 @@ public:
   PointPtr get_current_position();
   VectorPtr get_current_direction();
   bool get_bumper_state();
-  CommunicatorPtr get_communicator();
+  BaseCommunicatorPtr get_communicator();
   void set_behavior_run(boost::function<void()>);
   void set_linear_velocity(double);
   void set_angular_velocity(double);
@@ -76,6 +78,7 @@ private:
   double starting_point_y; // arg
   std::string plan_name; // arg
   std::string robot_name; // arg
+  std::string ip_server; // arg
   double linear_velocity; // arg
   double positive_angular_velocity; // arg
   double negative_angular_velocity; // arg
@@ -99,8 +102,8 @@ private:
   double linear_velocity_max; // param
   double angular_velocity_step; // param
   double angular_velocity_max; // param
-  CommunicatorPtr communicator;
   geometry_msgs::TwistPtr velocity;
+  MstcCommunicatorPtr communicator;
 
   boost::function<void()> behavior_run;
 

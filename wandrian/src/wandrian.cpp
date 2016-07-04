@@ -83,12 +83,16 @@ void Wandrian::wandrian_run() {
   } else if (robot->get_plan_name() == "mo") {
     MstcOnlinePtr mstc_online = MstcOnlinePtr(new MstcOnline());
     mstc_online->initialize(starting_point, robot->get_tool_size(),
-        robot->get_communicator());
+        boost::static_pointer_cast<MstcCommunicator>(
+            robot->get_communicator()));
     mstc_online->set_behavior_go_to(
         boost::bind(&Wandrian::wandrian_go_to, this, _1, _2));
     mstc_online->set_behavior_see_obstacle(
         boost::bind(&Wandrian::wandrian_see_obstacle, this, _1, _2));
     mstc_online->cover();
+    robot->stop();
+    mstc_online->help_dead_robot();
+    robot->stop();
   } else if (robot->get_plan_name() == "bo") {
     BoustrophedonOnlinePtr boustrophedon_online = BoustrophedonOnlinePtr(
         new BoustrophedonOnline());
@@ -225,31 +229,6 @@ void Wandrian::wandrian_rotate_randomly() {
 }
 
 void Wandrian::wandrian_go_straight() {
-  // this->robot->set_bumper_state_automatic(false);
-  // std::cout << "go straight \n";
-  // this->robot->set_linear_velocity(this->robot->get_linear_velocity());
-  // while (true){
-  //   if (this->robot->get_bumper_state() == kobuki_msgs::BumperEvent::PRESSED) {
-  //     this->robot->set_linear_velocity(-this->robot->get_linear_velocity());
-  //     int count = 1;
-  //     int old_count = 0;
-  //     double time_counter = 0;
-  //     clock_t this_time = clock();
-  //     clock_t last_time = this_time;
-  //     while (true) {
-  //       this_time = clock();
-  //       time_counter += (double) (this_time - last_time);
-  //       last_time = this_time;
-  //       if (time_counter > (double) (TIME * CLOCKS_PER_SEC)) {
-  //         time_counter -= (double) (TIME * CLOCKS_PER_SEC);
-  //         break;
-  //       }
-  //     }
-  //     break;
-  //   }
-  // }
-  // this->robot->stop();
-  // this->robot->set_bumper_state(kobuki_msgs::BumperEvent::RELEASED);
   robot->set_bumper_state_automatic(false);
   std::cout << "go straight \n";
   robot->set_linear_velocity(robot->get_linear_velocity());

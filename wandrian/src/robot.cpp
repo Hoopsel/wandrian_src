@@ -50,6 +50,7 @@ bool Robot::initialize() {
   nh.getParam("starting_point_y", starting_point_y);
   nh.getParam("plan_name", plan_name);
   nh.getParam("robot_name", robot_name);
+  nh.getParam("ip_server", ip_server);
   nh.getParam("linear_velocity", linear_velocity);
   nh.getParam("positive_angular_velocity", positive_angular_velocity);
   nh.getParam("negative_angular_velocity", negative_angular_velocity);
@@ -71,12 +72,14 @@ bool Robot::initialize() {
   nh.getParam("angular_velocity_max", angular_velocity_max);
 
   if (plan_name == "mstc_online") {
-    communicator = CommunicatorPtr(new Communicator());
+    communicator = MstcCommunicatorPtr(new MstcCommunicator());
     communicator->set_robot_name(robot_name);
     communicator->set_tool_size(tool_size);
-    std::cout << "1. My name is " << communicator->get_robot_name();
-    std::cout << "2. My name is " << robot_name;
-    std::cout << "3. Other information: " << plan_name << starting_point_x
+    boost::static_pointer_cast<MstcCommunicator>(communicator)->set_ip_server(
+        ip_server);
+    std::cout << " 1. My name is " << communicator->get_robot_name();
+    std::cout << " 2. My name is " << robot_name;
+    std::cout << " 3. Other information: " << plan_name << starting_point_x
         << starting_point_y << tool_size;
   }
 
@@ -227,6 +230,10 @@ std::string Robot::get_plan_name() {
   return plan_name;
 }
 
+std::string Robot::get_ip_server() {
+  return ip_server;
+}
+
 double Robot::get_linear_velocity() {
   return linear_velocity;
 }
@@ -279,8 +286,12 @@ bool Robot::get_bumper_state() {
   return bumper_state;
 }
 
-CommunicatorPtr Robot::get_communicator() {
-  return communicator;
+BaseCommunicatorPtr Robot::get_communicator() {
+  if (plan_name == "mstc_online") {
+    return boost::static_pointer_cast<MstcCommunicator>(communicator);
+  } else
+    // FIXME
+    return boost::static_pointer_cast<MstcCommunicator>(communicator);
 }
 
 void Robot::set_behavior_run(boost::function<void()> behavior_run) {
@@ -387,6 +398,11 @@ void Robot::process_keyboard_input(char c) {
   }
   case 'r':
   case 'z':
+    if (boost::static_pointer_cast<MstcCommunicator>(communicator)->get_ip_server()
+        != "no_need") {
+      boost::static_pointer_cast<MstcCommunicator>(communicator)->connect_server(
+          get_ip_server());
+    }
     ROS_INFO_STREAM("[Run]: " << "Start running");
     thread_run.start(&Robot::start_thread_run, *this);
     if (plan_name == "mstc_online") {
@@ -395,12 +411,22 @@ void Robot::process_keyboard_input(char c) {
     break;
   case 'c':
     if (plan_name == "mstc_online") {
-      communicator->write_old_cells_message("");
-      communicator->write_status_message("");
+      boost::static_pointer_cast<MstcCommunicator>(communicator)->write_old_cells_message_to_rosbag(
+          "");
+      boost::static_pointer_cast<MstcCommunicator>(communicator)->write_status_message_to_rosbag(
+          "");
+      boost::static_pointer_cast<MstcCommunicator>(communicator)->write_obstacle_message_to_rosbag(
+          "");
     }
     break;
   case 'q':
   case ' ':
+    if (boost::static_pointer_cast<MstcCommunicator>(communicator)->get_ip_server()
+        != "no_need") {
+      boost::static_pointer_cast<MstcCommunicator>(communicator)->send_save_message_to_server(
+          "q");
+      boost::static_pointer_cast<MstcCommunicator>(communicator)->disconnect_server();
+    }
     is_quitting = true;
     break;
   default:
@@ -419,10 +445,25 @@ void Robot::start_thread_status() {
     last_time = this_time;
     if (time_counter > (double) (NUM_SECONDS * CLOCKS_PER_SEC)) {
       time_counter -= (double) (NUM_SECONDS * CLOCKS_PER_SEC);
+      if (communicator->get_ip_server() != "no_need") {
+        communicator->get_status_message_from_server();
+      }
       std::string status = communicator->create_status_message(
           boost::static_pointer_cast<IdentifiableCell>(
               communicator->get_current_cell()));
-      communicator->write_status_message(status);
+      communicator->write_status_message_to_rosbag(status);
+      communicator->send_save_message_to_server(
+          communicator->create_status_message_to_send_to_server(status));
+      std::cout << "Update my status every 5s\n";
+//      std::string status = boost::static_pointer_cast<MstcCommunicator>(
+//          communicator)->create_status_message(
+//          boost::static_pointer_cast<IdentifiableCell>(
+//              communicator->get_current_cell()));
+//      boost::static_pointer_cast<MstcCommunicator>(communicator)->write_status_message_to_rosbag(
+//          status);
+//      boost::static_pointer_cast<MstcCommunicator>(communicator)->send_save_message_to_server(
+//          boost::static_pointer_cast<MstcCommunicator>(communicator)->create_status_message_to_send_to_server(
+//              status));
     }
   }
 }

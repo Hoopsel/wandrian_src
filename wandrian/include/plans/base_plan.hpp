@@ -27,6 +27,7 @@ public:
   virtual ~BasePlan();
   virtual void cover();
 
+  std::list<PointPtr> get_path();
   void set_behavior_go_to(boost::function<bool(PointPtr, bool)>);
 
 protected:
